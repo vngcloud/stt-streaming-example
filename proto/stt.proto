@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package speechtotext;
+
+option go_package="stt-streaming-example/stt";
+
+
+service SpeechToText {
+  rpc StreamingSpeechToText (stream StreamingSpeechToTextRequest) returns (stream StreamingSpeechToTextResponse) {}
+}
+
+message StreamingSpeechToTextRequest {
+  oneof request {
+    StreamingSpeechToTextConfig config = 1;
+    StreamingSpeechToTextData data = 2;
+  } 
+}
+
+message StreamingSpeechToTextConfig {
+  enum AudioEncoding {
+    WAV = 0;
+    AAC = 1;
+  }
+  AudioEncoding audio_encoding = 1;
+  int32 sample_rate_hertz = 2; // 16000
+  int32 audio_channel_count = 3; // 1
+  int32 bytes_per_sample = 4; // 2
+}
+message StreamingSpeechToTextData {
+  bytes data = 1;
+  enum ChunkType {
+    FIRST = 0;
+    MIDDLE = 1;
+    LAST = 2;
+  }
+  ChunkType chunk_type = 2;
+}
+message StreamingSpeechToTextResponse {
+  string id = 1;
+  int32 status = 2;
+  StreamingSpeechToTextResult result = 3;
+  int64 total_billed_time = 4;
+  string msg = 5;
+  int64 time_start = 6;
+}
+message StreamingSpeechToTextResult {
+  repeated StreamingSpeechToTextHypothesis hypotheses = 1;
+  bool final = 2;
+  bool close_stream = 3;
+  int32 token_length = 5;
+}
+message StreamingSpeechToTextHypothesis {
+  string transcript = 1;
+  string transcript_normed = 2;
+  string transcript_urlencoded = 3;
+  string transcript_normed_urlencoded = 4;
+  float confidence = 5;
+  float likelihood = 6;
+}
+
